@@ -1,5 +1,21 @@
--- PostgreSQL / SQLite compatible logical schema (SQLAlchemy models are source of truth).
--- Adjust types for your engine (e.g. BIGSERIAL for PostgreSQL).
+-- PostgreSQL / SQLite compatible schema (SQLAlchemy models are source of truth).
+-- users.created_at maps to column registered_at in ORM.
+
+CREATE TABLE IF NOT EXISTS regions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name_uz VARCHAR(255) NOT NULL,
+    name_ru VARCHAR(255) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT 1,
+    sort_order INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS faq_categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name_uz VARCHAR(255) NOT NULL,
+    name_ru VARCHAR(255) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT 1,
+    sort_order INTEGER NOT NULL DEFAULT 0
+);
 
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -8,7 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     full_name VARCHAR(255) NOT NULL,
     phone VARCHAR(64) NOT NULL,
     age INTEGER,
-    region VARCHAR(255) NOT NULL,
+    region_id INTEGER NOT NULL REFERENCES regions(id),
     role VARCHAR(32) NOT NULL DEFAULT 'user',
     language VARCHAR(8) NOT NULL DEFAULT 'uz',
     registered_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -19,6 +35,7 @@ CREATE INDEX IF NOT EXISTS ix_users_telegram_id ON users (telegram_id);
 
 CREATE TABLE IF NOT EXISTS faqs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_id INTEGER NOT NULL REFERENCES faq_categories(id) ON DELETE CASCADE,
     sort_order INTEGER NOT NULL DEFAULT 0,
     question_uz VARCHAR(512) NOT NULL,
     answer_uz TEXT NOT NULL,

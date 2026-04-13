@@ -11,11 +11,12 @@ def label_set(*keys: str) -> set[str]:
 
 def all_registered_menu_labels() -> set[str]:
     return label_set(
+        "menu.stats",
         "menu.faq",
         "menu.support",
         "menu.suggestion",
-        "menu.language",
-        "menu.stats",
         "menu.broadcast",
+        "menu.regions_admin",
+        "menu.faq_admin",
         "menu.admin_panel",
     )

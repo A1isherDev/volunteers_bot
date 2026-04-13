@@ -42,4 +42,10 @@ async def init_db() -> None:
     assert _engine is not None
     async with _engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    factory = get_session_factory()
+    async with factory() as session:
+        from app.database.bootstrap import bootstrap_defaults
+
+        await bootstrap_defaults(session)
+        await session.commit()
     logger.info("Database tables ensured")

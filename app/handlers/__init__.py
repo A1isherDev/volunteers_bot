@@ -2,26 +2,26 @@ from aiogram import Dispatcher
 
 
 def register_handlers(dp: Dispatcher) -> None:
-    from app.handlers import (
-        admin_inbox,
-        broadcast,
-        errors,
-        faq_fsm,
-        group_commands,
-        menu,
-        registration,
-        suggestion,
-        super_admin,
-        support,
-    )
+    from app.handlers.admin import broadcast as admin_broadcast
+    from app.handlers.admin import faq as admin_faq
+    from app.handlers.admin import inbox as admin_inbox
+    from app.handlers.admin import regions as admin_regions
+    from app.handlers.admin import super_admin as admin_super
+    from app.handlers.user import errors as user_errors
+    from app.handlers.user import group_commands as user_group
+    from app.handlers.user import menu as user_menu
+    from app.handlers.user import registration as user_registration
+    from app.handlers.user import suggestion as user_suggestion
+    from app.handlers.user import support as user_support
 
-    dp.include_router(errors.router)
+    dp.include_router(user_errors.router)
     dp.include_router(admin_inbox.router)
-    dp.include_router(group_commands.router)
-    dp.include_router(registration.router)
-    dp.include_router(faq_fsm.router)
-    dp.include_router(broadcast.router)
-    dp.include_router(super_admin.router)
-    dp.include_router(support.router)
-    dp.include_router(suggestion.router)
-    dp.include_router(menu.router)
+    dp.include_router(user_group.router)
+    dp.include_router(user_registration.router)
+    dp.include_router(admin_faq.router)
+    dp.include_router(admin_broadcast.router)
+    dp.include_router(admin_super.router)
+    dp.include_router(admin_regions.router)
+    dp.include_router(user_support.router)
+    dp.include_router(user_suggestion.router)
+    dp.include_router(user_menu.router)

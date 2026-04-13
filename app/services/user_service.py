@@ -6,7 +6,7 @@ from sqlalchemy import func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
-from app.database.models import User, UserRole
+from app.database.models import Region, User, UserRole
 
 
 class UserService:
@@ -44,7 +44,7 @@ class UserService:
         telegram_id: int,
         full_name: str,
         phone: str,
-        region: str,
+        region_id: int,
         age: int | None,
         language: str = "uz",
         username: str | None = None,
@@ -55,7 +55,7 @@ class UserService:
             username=username,
             full_name=full_name,
             phone=phone,
-            region=region,
+            region_id=region_id,
             age=age,
             role=role,
             language=language,
@@ -84,6 +84,7 @@ class UserService:
         per_page: int = 8,
         query: str | None = None,
     ) -> tuple[list[User], int]:
+        base = select(User).join(Region, User.region_id == Region.id)
         filters = []
         if query and query.strip():
             term = f"%{query.strip().lower()}%"
@@ -91,18 +92,19 @@ class UserService:
                 or_(
                     func.lower(User.full_name).like(term),
                     func.lower(User.phone).like(term),
-                    func.lower(User.region).like(term),
+                    func.lower(Region.name_uz).like(term),
+                    func.lower(Region.name_ru).like(term),
                     func.lower(func.coalesce(User.username, "")).like(term),
                 )
             )
-        count_stmt = select(func.count()).select_from(User)
+        count_stmt = select(func.count()).select_from(User).join(Region, User.region_id == Region.id)
         if filters:
             count_stmt = count_stmt.where(*filters)
         total = int((await self.session.execute(count_stmt)).scalar_one())
         pages = max(1, (total + per_page - 1) // per_page)
         page = max(1, min(page, pages))
         offset = (page - 1) * per_page
-        stmt = select(User).order_by(User.registered_at.desc())
+        stmt = base.order_by(User.created_at.desc())
         if filters:
             stmt = stmt.where(*filters)
         r = await self.session.execute(stmt.offset(offset).limit(per_page))

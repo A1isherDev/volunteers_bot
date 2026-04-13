@@ -10,8 +10,12 @@ class FAQService:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def list_all_ordered(self) -> list[FAQ]:
-        r = await self.session.execute(select(FAQ).order_by(FAQ.sort_order, FAQ.id))
+    async def list_by_category_ordered(self, category_id: int) -> list[FAQ]:
+        r = await self.session.execute(
+            select(FAQ)
+            .where(FAQ.category_id == category_id)
+            .order_by(FAQ.sort_order, FAQ.id)
+        )
         return list(r.scalars().all())
 
     async def get(self, faq_id: int) -> FAQ | None:
@@ -20,14 +24,16 @@ class FAQService:
 
     async def create(
         self,
+        category_id: int,
         question_uz: str,
         answer_uz: str,
         question_ru: str | None,
         answer_ru: str | None,
     ) -> FAQ:
-        max_sort = await self.session.scalar(select(func.max(FAQ.sort_order)))
-        nxt = (max_sort or 0) + 1
+        mx = await self.session.scalar(select(func.max(FAQ.sort_order)).where(FAQ.category_id == category_id))
+        nxt = (mx or 0) + 1
         f = FAQ(
+            category_id=category_id,
             sort_order=nxt,
             question_uz=question_uz,
             answer_uz=answer_uz,

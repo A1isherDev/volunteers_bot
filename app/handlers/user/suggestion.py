@@ -32,7 +32,10 @@ _suggestion_cooldown = UserCooldown()
 )
 async def suggestion_entry(message: Message, state: FSMContext, db_user: User):
     await state.set_state(SuggestionStates.text)
-    await message.answer(t(db_user.language, "suggestion.prompt"))
+    await message.answer(
+        t(db_user.language, "suggestion.prompt"),
+        reply_markup=main_menu_kb(db_user.language, db_user),
+    )
 
 
 @router.message(F.chat.type == "private", IsRegistered(), StateFilter(SuggestionStates.text), F.text)
@@ -68,4 +71,4 @@ async def suggestion_body(message: Message, state: FSMContext, db_user: User, se
         return
     _suggestion_cooldown.record(sender.id)
     await state.clear()
-    await message.answer(t(lang, "suggestion.thanks"))
+    await message.answer(t(lang, "suggestion.thanks"), reply_markup=main_menu_kb(lang, db_user))

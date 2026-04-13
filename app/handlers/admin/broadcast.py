@@ -9,6 +9,7 @@ from app.database.models import User
 from app.handlers.filters import IsAdmin
 from app.handlers.labels import label_set
 from app.i18n import t
+from app.keyboards.common import main_menu_kb
 from app.services.broadcast_service import BroadcastService, parse_inline_buttons
 from app.services.user_service import UserService
 from app.states.forms import BroadcastStates
@@ -60,8 +61,9 @@ async def broadcast_buttons(message: Message, state: FSMContext, db_user: User):
 
 @router.message(F.chat.type == "private", IsAdmin(), StateFilter(BroadcastStates.confirm), Command("cancel"))
 async def broadcast_cancel(message: Message, state: FSMContext, db_user: User):
+    lang = db_user.language
     await state.clear()
-    await message.answer("OK")
+    await message.answer(t(lang, "broadcast.cancelled"), reply_markup=main_menu_kb(lang, db_user))
 
 
 @router.message(F.chat.type == "private", IsAdmin(), StateFilter(BroadcastStates.confirm), Command("yes"))
@@ -81,7 +83,10 @@ async def broadcast_run(message: Message, state: FSMContext, db_user: User, sess
         photo_file_id=photo_id,
         reply_markup=markup,
     )
-    await message.answer(t(lang, "broadcast.done", ok=ok, fail=fail))
+    await message.answer(
+        t(lang, "broadcast.done", ok=ok, fail=fail),
+        reply_markup=main_menu_kb(lang, db_user),
+    )
     logger.info("Broadcast finished ok=%s fail=%s by %s", ok, fail, db_user.telegram_id)
 
 

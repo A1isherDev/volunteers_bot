@@ -1,6 +1,8 @@
 from app.states.forms import (
     BroadcastStates,
     FAQAdminStates,
+    FAQCategoryAdminStates,
+    RegionAdminStates,
     RegistrationStates,
     SuggestionStates,
     SuperAdminStates,
@@ -11,6 +13,8 @@ __all__ = [
     "RegistrationStates",
     "SupportStates",
     "SuggestionStates",
+    "RegionAdminStates",
+    "FAQCategoryAdminStates",
     "FAQAdminStates",
     "BroadcastStates",
     "SuperAdminStates",

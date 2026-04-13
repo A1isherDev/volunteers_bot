@@ -1,17 +1,25 @@
 from app.keyboards.common import (
-    faq_admin_kb,
-    faq_list_inline,
+    LANG_BTN_RU,
+    LANG_BTN_UZ,
+    LANG_PICK_LABELS,
+    faq_admin_root_inline,
+    language_pick_kb,
     main_menu_kb,
-    registration_contact_kb,
+    region_admin_root_inline,
+    registration_phone_kb,
     registration_skip_age_kb,
     super_admin_user_actions,
 )
 
 __all__ = [
+    "LANG_BTN_RU",
+    "LANG_BTN_UZ",
+    "LANG_PICK_LABELS",
+    "language_pick_kb",
     "main_menu_kb",
-    "registration_contact_kb",
+    "registration_phone_kb",
     "registration_skip_age_kb",
-    "faq_list_inline",
-    "faq_admin_kb",
+    "region_admin_root_inline",
+    "faq_admin_root_inline",
     "super_admin_user_actions",
 ]

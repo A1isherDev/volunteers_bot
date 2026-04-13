@@ -1,3 +1,4 @@
+import html
 import logging
 
 from aiogram import F, Router
@@ -6,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from app.config import get_settings
-from app.database.models import User, UserRole
+from app.database.models import Region, User, UserRole
 from app.handlers.filters import IsRegistered, IsSuperAdmin
 from app.handlers.labels import label_set
 from app.i18n import t
@@ -105,7 +106,12 @@ async def super_open_user(query: CallbackQuery, db_user: User, session):
         await query.answer("—", show_alert=True)
         return
     un = f"@{u.username}" if u.username else "—"
-    text = f"{u.full_name}\nID: <code>{u.telegram_id}</code>\n{un}\nPhone: {u.phone}\nRole: {u.role}"
+    reg = await session.get(Region, u.region_id)
+    rtxt = f"{reg.name_uz} / {reg.name_ru}" if reg else "—"
+    text = (
+        f"{html.escape(u.full_name)}\nID: <code>{u.telegram_id}</code>\n{html.escape(un)}\n"
+        f"Phone: {html.escape(u.phone)}\nRegion: {html.escape(rtxt)}\nRole: {u.role}"
+    )
     await query.message.edit_text(text, reply_markup=super_admin_user_actions(lang, u.telegram_id))
     await query.answer()
 

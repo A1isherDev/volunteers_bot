@@ -1,28 +1,58 @@
 {
   "start": {
-    "welcome": "Xush kelibsiz! Ro'yxatdan o'tish uchun ism familiyangizni kiriting.",
-    "ask_phone": "Telefon raqamingizni yuborish uchun quyidagi tugmani bosing.",
+    "pick_language": "Tilni tanlang / Выберите язык:",
+    "pick_language_retry": "Iltimos, tugmalardan birini tanlang.",
+    "welcome": "Ism va familiyangizni kiriting.",
+    "ask_phone": "Telefon raqamingizni \"Telefonni yuborish\" tugmasi bilan yuboring yoki raqamni qo'lda yozing (9–16 raqam).",
+    "phone_invalid": "Telefon raqami noto'g'ri. Qayta kiriting yoki tugma orqali yuboring.",
     "ask_age": "Yoshingizni raqam bilan kiriting yoki \"O'tkazib yuborish\" tugmasini bosing.",
-    "ask_region": "Hudud yoki shahringizni kiriting.",
+    "pick_region": "Hududingizni pastdagi tugmalardan tanlang.",
     "done": "Ro'yxatdan muvaffaqiyatli o'tdingiz!",
-    "already": "Siz allaqachon ro'yxatdan o'tgansiz."
+    "welcome_back": "Xush kelibsiz! Menyu orqali davom eting."
+  },
+  "language": {
+    "changed": "Til o'zgartirildi."
   },
   "menu": {
-    "faq": "FAQ / Loyihalar haqida",
-    "support": "Qo'llab-quvvatlash",
-    "suggestion": "Taklif yuborish",
+    "stats": "📊 Statistika",
+    "faq": "📚 FAQ / Loyihalar haqida",
+    "support": "🆘 Qo'llab-quvvatlash",
+    "suggestion": "💡 Taklif yuborish",
     "language": "Til / Язык",
-    "stats": "Statistika",
     "admin_panel": "Super admin",
-    "broadcast": "Xabar yuborish (barchaga)"
+    "broadcast": "Xabar yuborish (barchaga)",
+    "regions_admin": "🗺️ Hududlar (admin)",
+    "faq_admin": "📂 FAQ boshqaruvi"
+  },
+  "regions": {
+    "none_contact_admin": "Hozircha mavjud hududlar yo'q. Iltimos, admin bilan bog'laning — ular hudud qo'shgach, /start bilan qayta urinib ko'ring.",
+    "pick_valid": "Iltimos, ro'yxatdan birini tanlang."
   },
   "faq": {
-    "empty": "Hozircha savol-javoblar yo'q.",
-    "pick": "Savolni tanlang:",
-    "admin_menu": "FAQ boshqaruvi",
-    "add": "FAQ qo'shish",
-    "list_edit": "Tahrirlash",
-    "list_delete": "O'chirish",
+    "admin_title": "FAQ va kategoriyalar boshqaruvi",
+    "empty": "Bu bo'limda savollar yo'q.",
+    "no_categories": "Kategoriyalar yo'q.",
+    "empty_category": "Bu kategoriyada savollar yo'q.",
+    "pick_category": "Kategoriyani tanlang:",
+    "pick_category_for_faq": "FAQ qaysi kategoriyaga tegishli?",
+    "pick_in_category": "{name} — savolni tanlang:",
+    "pick_category_edit_faq": "Tahrirlash uchun kategoriya:",
+    "pick_category_delete_faq": "O'chirish uchun kategoriya:",
+    "cat_add": "➕ Kategoriya qo'shish",
+    "cat_edit": "✏️ Kategoriya tahriri",
+    "cat_delete": "❌ Kategoriya o'chirish",
+    "cat_enter_uz": "Kategoriya nomi (O'zbek):",
+    "cat_enter_ru": "Kategoriya nomi (Rus):",
+    "cat_saved": "Kategoriya saqlandi.",
+    "cat_pick_edit": "Tahrirlanadigan kategoriya:",
+    "cat_new_uz": "Yangi nom (O'zbek):",
+    "cat_new_ru": "Yangi nom (Rus):",
+    "cat_updated": "Kategoriya yangilandi.",
+    "cat_pick_delete": "O'chiriladigan kategoriya (faqat o'chiriladi):",
+    "cat_deleted": "Kategoriya o'chirildi (noaktiv).",
+    "add": "➕ FAQ qo'shish",
+    "list_edit": "✏️ FAQ tahrirlash",
+    "list_delete": "❌ FAQ o'chirish",
     "enter_q_uz": "Savol matnini (O'zbek) kiriting:",
     "enter_a_uz": "Javob matnini (O'zbek) kiriting:",
     "enter_q_ru": "Savol matnini (Rus) kiriting yoki /skip",
@@ -35,7 +65,7 @@
     "new_answer": "Yangi javob matni:"
   },
   "support": {
-    "prompt": "Murojaatingizni yozing. Har bir xabar yangi tiket yaratadi.",
+    "prompt": "Murojaatingizni yozing. Yuborilgach asosiy menyuga qaytadi. Pastdagi tugmalar bilan boshqa bo'limga o'tishingiz mumkin.",
     "sent": "So'rovingiz qabul qilindi. Tez orada javob beramiz.",
     "ticket_closed": "Bu tiket yopilgan.",
     "reply_sent": "Foydalanuvchiga yuborildi."
@@ -51,7 +81,8 @@
     "buttons_prompt": "Tugmalar: har bir qatorda `Matn|https://link` yoki /skip",
     "confirm": "Tasdiqlaysizmi? Ha - /yes Bekor - /cancel",
     "started": "Xabar yuborish boshlandi.",
-    "done": "Yuborish tugadi. Muvaffaqiyat: {ok}, xato: {fail}"
+    "done": "Yuborish tugadi. Muvaffaqiyat: {ok}, xato: {fail}",
+    "cancelled": "Bekor qilindi."
   },
   "stats": {
     "title": "Statistika",
@@ -59,7 +90,7 @@
     "active": "Faol (7 kun): {active}"
   },
   "group": {
-    "help": "Buyruqlar: /help — yordam, /volunteer_info — loyiha haqida, /link_group — guruhni bog'lash (admin).",
+    "help": "Buyruqlar: /help — yordam, /volunteer_info — loyiha haqida, /link_group — guruhni bog'lash (admin). Tilni o'zgartirish: /lang",
     "volunteer_none": "Bu guruh hali loyihaga bog'lanmagan.",
     "volunteer": "Loyiha: {name}\n{desc}",
     "link_ok": "Guruh bog'landi: {name}",
@@ -74,7 +105,25 @@
     "demote": "Adminlikdan olish",
     "super_promote": "Super admin",
     "role_updated": "Rol yangilandi.",
-    "page": "Sahifa {page}/{pages}"
+    "page": "Sahifa {page}/{pages}",
+    "regions": {
+      "title": "Hududlar boshqaruvi",
+      "add": "➕ Hudud qo'shish",
+      "edit": "✏️ Tahrirlash",
+      "delete": "❌ O'chirish",
+      "list": "📋 Ro'yxat",
+      "enter_uz": "Hudud nomi (O'zbek):",
+      "enter_ru": "Hudud nomi (Rus):",
+      "saved": "Hudud saqlandi.",
+      "pick_edit": "Tahrirlanadigan hudud:",
+      "new_uz": "Yangi nom (O'zbek):",
+      "new_ru": "Yangi nom (Rus):",
+      "updated": "Hudud yangilandi.",
+      "pick_delete": "O'chiriladigan hudud (noaktiv):",
+      "deactivated": "Hudud o'chirildi (noaktiv).",
+      "empty": "Hududlar yo'q.",
+      "list_title": "Hududlar:"
+    }
   },
   "errors": {
     "generic": "Xatolik yuz berdi. Keyinroq urinib ko'ring.",
@@ -86,7 +135,8 @@
     "skip": "O'tkazib yuborish",
     "cancel": "Bekor qilish",
     "back": "Orqaga",
+    "back_menu": "Menyu",
     "share_contact": "Telefonni yuborish",
-    "menu_hint": "Pastdagi menyudan bo'limni tanlang."
+    "menu_hint": "Asosiy menyu."
   }
 }

@@ -7,18 +7,38 @@ from aiogram.types import (
 )
 
 from app.config import get_settings
-from app.database.models import FAQ, User, UserRole
+from app.database.models import User, UserRole
 from app.i18n import t
+
+LANG_BTN_UZ = "🇺🇿 O'zbek tili"
+LANG_BTN_RU = "🇷🇺 Русский"
+LANG_PICK_LABELS: frozenset[str] = frozenset({LANG_BTN_UZ, LANG_BTN_RU})
+
+
+def language_pick_kb() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text=LANG_BTN_UZ)], [KeyboardButton(text=LANG_BTN_RU)]],
+        resize_keyboard=True,
+    )
 
 
 def main_menu_kb(lang: str, user: User | None) -> ReplyKeyboardMarkup:
     rows: list[list[KeyboardButton]] = [
+        [KeyboardButton(text=t(lang, "menu.stats"))],
         [KeyboardButton(text=t(lang, "menu.faq"))],
-        [KeyboardButton(text=t(lang, "menu.support")), KeyboardButton(text=t(lang, "menu.suggestion"))],
-        [KeyboardButton(text=t(lang, "menu.language"))],
+        [
+            KeyboardButton(text=t(lang, "menu.support")),
+            KeyboardButton(text=t(lang, "menu.suggestion")),
+        ],
     ]
     if user and user.role in (UserRole.admin.value, UserRole.super_admin.value):
-        rows.append([KeyboardButton(text=t(lang, "menu.stats")), KeyboardButton(text=t(lang, "menu.broadcast"))])
+        rows.append(
+            [
+                KeyboardButton(text=t(lang, "menu.broadcast")),
+                KeyboardButton(text=t(lang, "menu.regions_admin")),
+            ]
+        )
+        rows.append([KeyboardButton(text=t(lang, "menu.faq_admin"))])
     s = get_settings()
     super_ids = s.parsed_super_admin_ids()
     if user and (user.role == UserRole.super_admin.value or user.telegram_id in super_ids):
@@ -26,7 +46,7 @@ def main_menu_kb(lang: str, user: User | None) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
 
 
-def registration_contact_kb(lang: str) -> ReplyKeyboardMarkup:
+def registration_phone_kb(lang: str) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text=t(lang, "common.share_contact"), request_contact=True)]],
         resize_keyboard=True,
@@ -44,23 +64,36 @@ def remove_kb() -> ReplyKeyboardRemove:
     return ReplyKeyboardRemove()
 
 
-def faq_list_inline(faqs: list[FAQ], lang: str, prefix: str = "faq") -> InlineKeyboardMarkup:
-    buttons: list[list[InlineKeyboardButton]] = []
-    for f in faqs:
-        title = f.question_ru if lang == "ru" and f.question_ru else f.question_uz
-        buttons.append([InlineKeyboardButton(text=title[:64], callback_data=f"{prefix}:{f.id}")])
-    return InlineKeyboardMarkup(inline_keyboard=buttons)
-
-
-def faq_admin_kb(lang: str) -> InlineKeyboardMarkup:
+def region_admin_root_inline(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text=t(lang, "faq.add"), callback_data="faqadm:add")],
+            [InlineKeyboardButton(text=t(lang, "admin.regions.add"), callback_data="regadm:add")],
             [
-                InlineKeyboardButton(text=t(lang, "faq.list_edit"), callback_data="faqadm:editlist"),
-                InlineKeyboardButton(text=t(lang, "faq.list_delete"), callback_data="faqadm:dellist"),
+                InlineKeyboardButton(text=t(lang, "admin.regions.edit"), callback_data="regadm:editlist"),
+                InlineKeyboardButton(text=t(lang, "admin.regions.delete"), callback_data="regadm:dellist"),
             ],
-            [InlineKeyboardButton(text=t(lang, "common.back"), callback_data="faqadm:close")],
+            [InlineKeyboardButton(text=t(lang, "admin.regions.list"), callback_data="regadm:list")],
+            [InlineKeyboardButton(text=t(lang, "common.back_menu"), callback_data="regadm:close")],
+        ]
+    )
+
+
+def faq_admin_root_inline(lang: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text=t(lang, "faq.cat_add"), callback_data="faqadm:addcat"),
+                InlineKeyboardButton(text=t(lang, "faq.cat_edit"), callback_data="faqadm:editcat"),
+            ],
+            [
+                InlineKeyboardButton(text=t(lang, "faq.cat_delete"), callback_data="faqadm:delcat"),
+            ],
+            [
+                InlineKeyboardButton(text=t(lang, "faq.add"), callback_data="faqadm:addfaq"),
+                InlineKeyboardButton(text=t(lang, "faq.list_edit"), callback_data="faqadm:editfaq"),
+            ],
+            [InlineKeyboardButton(text=t(lang, "faq.list_delete"), callback_data="faqadm:delfaq")],
+            [InlineKeyboardButton(text=t(lang, "common.back_menu"), callback_data="faqadm:close")],
         ]
     )
 

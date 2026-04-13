@@ -1,32 +1,32 @@
+from typing import Any
+
 from aiogram.filters import Filter
 from aiogram.types import Message
 
 from app.config import get_settings
-from app.database.models import UserRole
+from app.database.models import User, UserRole
 
 
 class IsRegistered(Filter):
-    async def __call__(self, _, data: dict) -> bool:
-        return data.get("db_user") is not None
+    async def __call__(self, _: Any, db_user: User | None = None) -> bool:
+        return db_user is not None
 
 
 class IsAdmin(Filter):
-    async def __call__(self, _, data: dict) -> bool:
-        u = data.get("db_user")
-        if not u:
+    async def __call__(self, _: Any, db_user: User | None = None) -> bool:
+        if not db_user:
             return False
-        return u.role in (UserRole.admin.value, UserRole.super_admin.value)
+        return db_user.role in (UserRole.admin.value, UserRole.super_admin.value)
 
 
 class IsSuperAdmin(Filter):
-    async def __call__(self, _, data: dict) -> bool:
-        u = data.get("db_user")
-        if not u:
+    async def __call__(self, _: Any, db_user: User | None = None) -> bool:
+        if not db_user:
             return False
         s = get_settings()
-        if u.telegram_id in s.parsed_super_admin_ids():
+        if db_user.telegram_id in s.parsed_super_admin_ids():
             return True
-        return u.role == UserRole.super_admin.value
+        return db_user.role == UserRole.super_admin.value
 
 
 class InAdminGroup(Filter):

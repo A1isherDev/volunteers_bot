@@ -32,7 +32,10 @@ _support_cooldown = UserCooldown()
 )
 async def support_entry(message: Message, state: FSMContext, db_user: User):
     await state.set_state(SupportStates.message)
-    await message.answer(t(db_user.language, "support.prompt"))
+    await message.answer(
+        t(db_user.language, "support.prompt"),
+        reply_markup=main_menu_kb(db_user.language, db_user),
+    )
 
 
 @router.message(F.chat.type == "private", IsRegistered(), StateFilter(SupportStates.message), F.text.startswith("/"))
@@ -44,12 +47,16 @@ async def support_ignore_commands(message: Message, db_user: User):
 async def support_text(message: Message, state: FSMContext, db_user: User, session, bot, tg_user):
     settings = get_settings()
     lang = db_user.language
+    sender = effective_telegram_user(message, tg_user)
+    if sender is None:
+        await message.answer(t(lang, "errors.generic"))
+        return
     body = (message.text or "").strip()
     if body in all_registered_menu_labels():
         await state.clear()
         await message.answer(t(lang, "common.menu_hint"), reply_markup=main_menu_kb(lang, db_user))
         return
-    if _support_cooldown.is_throttled(tg_user.id, settings.creation_cooldown_sec):
+    if _support_cooldown.is_throttled(sender.id, settings.creation_cooldown_sec):
         await message.answer(t(lang, "errors.cooldown"))
         return
     ts = TicketService(session)
@@ -66,7 +73,7 @@ async def support_text(message: Message, state: FSMContext, db_user: User, sessi
         return
     _support_cooldown.record(sender.id)
     await state.clear()
-    await message.answer(t(lang, "support.sent"))
+    await message.answer(t(lang, "support.sent"), reply_markup=main_menu_kb(lang, db_user))
 
 
 @router.message(F.chat.type == "private", IsRegistered(), StateFilter(SupportStates.message), F.photo)
@@ -100,7 +107,7 @@ async def support_photo(message: Message, state: FSMContext, db_user: User, sess
         return
     _support_cooldown.record(sender.id)
     await state.clear()
-    await message.answer(t(lang, "support.sent"))
+    await message.answer(t(lang, "support.sent"), reply_markup=main_menu_kb(lang, db_user))
 
 
 @router.message(
@@ -150,4 +157,4 @@ async def support_other_media(message: Message, state: FSMContext, db_user: User
             return
     _support_cooldown.record(sender.id)
     await state.clear()
-    await message.answer(t(lang, "support.sent"))
+    await message.answer(t(lang, "support.sent"), reply_markup=main_menu_kb(lang, db_user))
