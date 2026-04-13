@@ -17,6 +17,7 @@ from app.keyboards.common import (
 )
 from app.services.user_service import UserService
 from app.states.forms import RegistrationStates
+from app.utils.telegram_user import effective_telegram_user
 
 logger = logging.getLogger(__name__)
 router = Router(name="registration")
@@ -29,7 +30,7 @@ def _is_skip(text: str | None, lang: str) -> bool:
 
 
 @router.message(CommandStart(), F.chat.type == "private")
-async def cmd_start(message: Message, state: FSMContext, db_user: User | None, session, tg_user):
+async def cmd_start(message: Message, state: FSMContext, db_user: User | None, session):
     await state.clear()
     if db_user:
         lang = db_user.language
@@ -59,7 +60,8 @@ async def reg_contact(message: Message, state: FSMContext, session):
     data = await state.get_data()
     lang = data.get("lang", "uz")
     contact = message.contact
-    if not contact or contact.user_id != message.from_user.id:
+    fu = message.from_user
+    if not contact or not fu or contact.user_id != fu.id:
         await message.answer(t(lang, "start.ask_phone"), reply_markup=registration_contact_kb(lang))
         return
     phone = contact.phone_number or ""
@@ -96,15 +98,21 @@ async def reg_region(message: Message, state: FSMContext, session, tg_user):
     if len(region) < 2:
         await message.answer(t(lang, "start.ask_region"))
         return
+    actor = effective_telegram_user(message, tg_user)
+    if actor is None:
+        logger.warning("reg_region: missing from_user chat_id=%s", message.chat.id if message.chat else None)
+        await state.clear()
+        await message.answer(t(lang, "errors.generic"))
+        return
     svc = UserService(session)
     user = await svc.create_user(
-        telegram_id=tg_user.id,
+        telegram_id=actor.id,
         full_name=data["full_name"],
         phone=data["phone"],
         region=region,
         age=data.get("age"),
         language=lang,
-        username=tg_user.username,
+        username=actor.username,
     )
     await session.flush()
     await state.clear()

@@ -16,6 +16,7 @@ from app.services.suggestion_service import SuggestionService
 from app.states.forms import SuggestionStates
 from app.utils.cooldown import UserCooldown
 from app.utils.formatting import format_suggestion_header
+from app.utils.telegram_user import effective_telegram_user
 
 logger = logging.getLogger(__name__)
 router = Router(name="suggestion")
@@ -38,6 +39,10 @@ async def suggestion_entry(message: Message, state: FSMContext, db_user: User):
 async def suggestion_body(message: Message, state: FSMContext, db_user: User, session, bot, tg_user):
     settings = get_settings()
     lang = db_user.language
+    sender = effective_telegram_user(message, tg_user)
+    if sender is None:
+        await message.answer(t(lang, "errors.generic"))
+        return
     text = (message.text or "").strip()
     if not text:
         await message.answer(t(lang, "suggestion.prompt"))
@@ -46,13 +51,13 @@ async def suggestion_body(message: Message, state: FSMContext, db_user: User, se
         await state.clear()
         await message.answer(t(lang, "common.menu_hint"), reply_markup=main_menu_kb(lang, db_user))
         return
-    if _suggestion_cooldown.is_throttled(tg_user.id, settings.creation_cooldown_sec):
+    if _suggestion_cooldown.is_throttled(sender.id, settings.creation_cooldown_sec):
         await message.answer(t(lang, "errors.cooldown"))
         return
     svc = SuggestionService(session)
     s = await svc.create(db_user, text)
     await session.flush()
-    header = format_suggestion_header(s.id, db_user, tg_user.username if tg_user else None)
+    header = format_suggestion_header(s.id, db_user, sender.username)
     full = header + html.escape(text)
     try:
         sent = await bot.send_message(settings.admin_group_id, full, parse_mode="HTML")
@@ -61,6 +66,6 @@ async def suggestion_body(message: Message, state: FSMContext, db_user: User, se
         logger.exception("Forward suggestion: %s", e)
         await message.answer(t(lang, "errors.generic"))
         return
-    _suggestion_cooldown.record(tg_user.id)
+    _suggestion_cooldown.record(sender.id)
     await state.clear()
     await message.answer(t(lang, "suggestion.thanks"))
