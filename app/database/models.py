@@ -53,7 +53,10 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(64), nullable=False)
     age: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    region_id: Mapped[int] = mapped_column(ForeignKey("regions.id", ondelete="RESTRICT"), nullable=False)
+    region_id: Mapped[int | None] = mapped_column(
+        ForeignKey("regions.id", ondelete="RESTRICT"),
+        nullable=True,
+    )
     role: Mapped[str] = mapped_column(String(32), default=UserRole.user.value, nullable=False)
     language: Mapped[str] = mapped_column(String(8), default="uz", nullable=False)
     created_at: Mapped[datetime] = mapped_column(

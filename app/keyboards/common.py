@@ -78,6 +78,20 @@ def region_admin_root_inline(lang: str) -> InlineKeyboardMarkup:
     )
 
 
+def admin_panel_root_inline(lang: str, *, show_super: bool) -> InlineKeyboardMarkup:
+    rows: list[list[InlineKeyboardButton]] = [
+        [
+            InlineKeyboardButton(text=t(lang, "admin.panel_regions"), callback_data="admpan:reg"),
+            InlineKeyboardButton(text=t(lang, "admin.panel_faq"), callback_data="admpan:faq"),
+        ],
+        [InlineKeyboardButton(text=t(lang, "admin.panel_broadcast"), callback_data="admpan:bc")],
+    ]
+    if show_super:
+        rows.append([InlineKeyboardButton(text=t(lang, "admin.panel_super"), callback_data="admpan:super")])
+    rows.append([InlineKeyboardButton(text=t(lang, "common.back_menu"), callback_data="admpan:close")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
 def faq_admin_root_inline(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[

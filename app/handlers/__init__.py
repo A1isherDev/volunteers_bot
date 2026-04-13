@@ -2,6 +2,7 @@ from aiogram import Dispatcher
 
 
 def register_handlers(dp: Dispatcher) -> None:
+    from app.handlers import emergency as emergency_handlers
     from app.handlers.admin import broadcast as admin_broadcast
     from app.handlers.admin import faq as admin_faq
     from app.handlers.admin import inbox as admin_inbox
@@ -14,6 +15,7 @@ def register_handlers(dp: Dispatcher) -> None:
     from app.handlers.user import suggestion as user_suggestion
     from app.handlers.user import support as user_support
 
+    dp.include_router(emergency_handlers.router)
     dp.include_router(user_errors.router)
     dp.include_router(admin_inbox.router)
     dp.include_router(user_group.router)

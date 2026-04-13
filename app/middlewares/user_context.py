@@ -27,6 +27,8 @@ class UserContextMiddleware(BaseMiddleware):
         if tg_user is not None:
             svc = UserService(session)
             db_user = await svc.get_by_telegram_id(tg_user.id)
+            if not db_user:
+                db_user = await svc.ensure_env_privileged_stub(tg_user)
             if db_user:
                 db_user = await svc.ensure_env_roles(db_user)
                 await svc.touch_activity(tg_user.id, username=tg_user.username)

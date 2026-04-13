@@ -106,7 +106,7 @@ async def super_open_user(query: CallbackQuery, db_user: User, session):
         await query.answer("—", show_alert=True)
         return
     un = f"@{u.username}" if u.username else "—"
-    reg = await session.get(Region, u.region_id)
+    reg = await session.get(Region, u.region_id) if u.region_id is not None else None
     rtxt = f"{reg.name_uz} / {reg.name_ru}" if reg else "—"
     text = (
         f"{html.escape(u.full_name)}\nID: <code>{u.telegram_id}</code>\n{html.escape(un)}\n"

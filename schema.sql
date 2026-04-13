@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     full_name VARCHAR(255) NOT NULL,
     phone VARCHAR(64) NOT NULL,
     age INTEGER,
-    region_id INTEGER NOT NULL REFERENCES regions(id),
+    region_id INTEGER REFERENCES regions(id),
     role VARCHAR(32) NOT NULL DEFAULT 'user',
     language VARCHAR(8) NOT NULL DEFAULT 'uz',
     registered_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

@@ -26,6 +26,9 @@
   },
   "regions": {
     "none_contact_admin": "Hozircha mavjud hududlar yo'q. Iltimos, admin bilan bog'laning — ular hudud qo'shgach, /start bilan qayta urinib ko'ring.",
+    "none_available": "Hozircha hududlar mavjud emas.",
+    "admin_hint_add_region": "Yangi hudud qo'shish uchun: /add_region",
+    "user_try_later": "Keyinroq qayta urinib ko'ring.",
     "pick_valid": "Iltimos, ro'yxatdan birini tanlang."
   },
   "faq": {
@@ -98,6 +101,15 @@
     "link_usage": "Foydalanish: /link_group Loyiha nomi [tavsif]"
   },
   "admin": {
+    "panel_title": "Admin paneli",
+    "panel_regions": "🗺️ Hududlar",
+    "panel_faq": "📂 FAQ",
+    "panel_broadcast": "📣 Xabar yuborish",
+    "panel_super": "👤 Super admin",
+    "add_region_usage": "Foydalanish: /add_region O'zbek nomi | Rus nomi\nMasalan: /add_region Toshkent | Ташкент",
+    "add_region_ok": "Hudud qo'shildi.",
+    "add_region_bad": "Nomlar noto'g'ri. Iltimos, | bilan ikkita nom kiriting.",
+    "force_start_ok": "Holat tozalandi. Kerak bo'lsa /start yoki /admin.",
     "no_access": "Ruxsat yo'q.",
     "users": "Foydalanuvchilar",
     "search_prompt": "Qidiruv: ism, telefon yoki @username (yoki bo'sh - barchasi)",

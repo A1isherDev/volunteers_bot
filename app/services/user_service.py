@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func, or_, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
@@ -24,6 +25,43 @@ class UserService:
     async def get_by_telegram_id(self, telegram_id: int) -> User | None:
         r = await self.session.execute(select(User).where(User.telegram_id == telegram_id))
         return r.scalar_one_or_none()
+
+    async def ensure_env_privileged_stub(self, telegram_user) -> User | None:
+        """
+        If telegram_user is listed in env ADMIN_IDS / SUPER_ADMIN_IDS and has no DB row yet,
+        create a minimal user (no region) so admin flows never deadlock on empty setup.
+        """
+        tid = telegram_user.id
+        s = get_settings()
+        if not s.is_env_privileged_user(tid):
+            return None
+        existing = await self.get_by_telegram_id(tid)
+        if existing:
+            return await self.ensure_env_roles(existing)
+        lc = (getattr(telegram_user, "language_code", None) or "uz").lower()
+        lang = "ru" if lc.startswith("ru") else "uz"
+        name = (getattr(telegram_user, "full_name", None) or "").strip() or f"Admin {tid}"
+        role = self._env_roles(tid)
+        u = User(
+            telegram_id=tid,
+            username=getattr(telegram_user, "username", None),
+            full_name=name[:255],
+            phone="0000000000",
+            region_id=None,
+            age=None,
+            role=role,
+            language=lang,
+        )
+        try:
+            async with self.session.begin_nested():
+                self.session.add(u)
+                await self.session.flush()
+        except IntegrityError:
+            pass
+        out = await self.get_by_telegram_id(tid)
+        if out:
+            return await self.ensure_env_roles(out)
+        return None
 
     async def touch_activity(self, telegram_id: int, username: str | None = None) -> None:
         vals = {"last_active_at": datetime.now(timezone.utc)}
@@ -84,7 +122,7 @@ class UserService:
         per_page: int = 8,
         query: str | None = None,
     ) -> tuple[list[User], int]:
-        base = select(User).join(Region, User.region_id == Region.id)
+        base = select(User).outerjoin(Region, User.region_id == Region.id)
         filters = []
         if query and query.strip():
             term = f"%{query.strip().lower()}%"
@@ -92,12 +130,12 @@ class UserService:
                 or_(
                     func.lower(User.full_name).like(term),
                     func.lower(User.phone).like(term),
-                    func.lower(Region.name_uz).like(term),
-                    func.lower(Region.name_ru).like(term),
+                    func.lower(func.coalesce(Region.name_uz, "")).like(term),
+                    func.lower(func.coalesce(Region.name_ru, "")).like(term),
                     func.lower(func.coalesce(User.username, "")).like(term),
                 )
             )
-        count_stmt = select(func.count()).select_from(User).join(Region, User.region_id == Region.id)
+        count_stmt = select(func.count()).select_from(User).outerjoin(Region, User.region_id == Region.id)
         if filters:
             count_stmt = count_stmt.where(*filters)
         total = int((await self.session.execute(count_stmt)).scalar_one())

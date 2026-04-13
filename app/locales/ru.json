@@ -26,6 +26,9 @@
   },
   "regions": {
     "none_contact_admin": "Нет доступных регионов. Свяжитесь с администратором — после добавления регионов снова отправьте /start.",
+    "none_available": "Нет доступных регионов.",
+    "admin_hint_add_region": "Чтобы добавить регион: /add_region",
+    "user_try_later": "Попробуйте позже.",
     "pick_valid": "Выберите вариант из списка."
   },
   "faq": {
@@ -98,6 +101,15 @@
     "link_usage": "Использование: /link_group Название [описание]"
   },
   "admin": {
+    "panel_title": "Панель администратора",
+    "panel_regions": "🗺️ Регионы",
+    "panel_faq": "📂 FAQ",
+    "panel_broadcast": "📣 Рассылка",
+    "panel_super": "👤 Супер админ",
+    "add_region_usage": "Использование: /add_region Название (uz) | Название (ru)\nПример: /add_region Toshkent | Ташкент",
+    "add_region_ok": "Регион добавлен.",
+    "add_region_bad": "Неверный формат. Укажите два названия через |.",
+    "force_start_ok": "Состояние сброшено. При необходимости отправьте /start или /admin.",
     "no_access": "Нет доступа.",
     "users": "Пользователи",
     "search_prompt": "Поиск: имя, телефон или @username (пусто — все)",

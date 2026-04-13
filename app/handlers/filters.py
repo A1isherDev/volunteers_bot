@@ -1,10 +1,27 @@
 from typing import Any
 
 from aiogram.filters import Filter
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, Message, TelegramObject
 
 from app.config import get_settings
 from app.database.models import User, UserRole
+
+
+def may_use_admin_tools(telegram_id: int, db_user: User | None) -> bool:
+    """DB admin/super_admin or any id listed in ADMIN_IDS / SUPER_ADMIN_IDS."""
+    if get_settings().is_env_privileged_user(telegram_id):
+        return True
+    if db_user and db_user.role in (UserRole.admin.value, UserRole.super_admin.value):
+        return True
+    return False
+
+
+def _telegram_id_from_event(event: TelegramObject) -> int | None:
+    if isinstance(event, Message) and event.from_user:
+        return event.from_user.id
+    if isinstance(event, CallbackQuery) and event.from_user:
+        return event.from_user.id
+    return None
 
 
 class IsRegistered(Filter):
@@ -13,19 +30,24 @@ class IsRegistered(Filter):
 
 
 class IsAdmin(Filter):
-    async def __call__(self, _: Any, db_user: User | None = None) -> bool:
+    async def __call__(self, event: TelegramObject, db_user: User | None = None) -> bool:
+        tid = _telegram_id_from_event(event)
+        s = get_settings()
+        if tid is not None and s.is_env_privileged_user(tid):
+            return True
         if not db_user:
             return False
         return db_user.role in (UserRole.admin.value, UserRole.super_admin.value)
 
 
 class IsSuperAdmin(Filter):
-    async def __call__(self, _: Any, db_user: User | None = None) -> bool:
+    async def __call__(self, event: TelegramObject, db_user: User | None = None) -> bool:
+        tid = _telegram_id_from_event(event)
+        s = get_settings()
+        if tid is not None and tid in s.parsed_super_admin_ids():
+            return True
         if not db_user:
             return False
-        s = get_settings()
-        if db_user.telegram_id in s.parsed_super_admin_ids():
-            return True
         return db_user.role == UserRole.super_admin.value
 
 

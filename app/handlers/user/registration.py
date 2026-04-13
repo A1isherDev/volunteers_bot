@@ -7,6 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from app.database.models import User
+from app.handlers.filters import may_use_admin_tools
 from app.i18n import other_lang, t
 from app.keyboards.common import (
     LANG_BTN_RU,
@@ -27,6 +28,15 @@ from app.utils.telegram_user import effective_telegram_user
 
 logger = logging.getLogger(__name__)
 router = Router(name="registration")
+
+
+async def _reply_no_regions(message: Message, lang: str, db_user: User | None) -> None:
+    fu = message.from_user
+    tid = fu.id if fu else None
+    is_admin = tid is not None and may_use_admin_tools(tid, db_user)
+    lines = [t(lang, "regions.none_available")]
+    lines.append(t(lang, "regions.admin_hint_add_region") if is_admin else t(lang, "regions.user_try_later"))
+    await message.answer("\n\n".join(lines), reply_markup=remove_kb())
 
 
 def _is_skip(text: str | None, lang: str) -> bool:
@@ -106,7 +116,7 @@ async def reg_phone_manual(message: Message, state: FSMContext):
 
 
 @router.message(StateFilter(RegistrationStates.age), F.chat.type == "private", F.text)
-async def reg_age(message: Message, state: FSMContext, session):
+async def reg_age(message: Message, state: FSMContext, session, db_user: User | None):
     data = await state.get_data()
     lang = data.get("lang", "uz")
     text = message.text or ""
@@ -127,18 +137,18 @@ async def reg_age(message: Message, state: FSMContext, session):
     await state.set_state(RegistrationStates.region)
     kb = await get_dynamic_keyboard(session, "regions", lang)
     if kb is None:
-        await message.answer(t(lang, "regions.none_contact_admin"), reply_markup=remove_kb())
+        await _reply_no_regions(message, lang, db_user)
     else:
         await message.answer(t(lang, "start.pick_region"), reply_markup=kb)
 
 
 @router.message(StateFilter(RegistrationStates.region), F.chat.type == "private", F.text)
-async def reg_region(message: Message, state: FSMContext, session, tg_user):
+async def reg_region(message: Message, state: FSMContext, session, tg_user, db_user: User | None):
     data = await state.get_data()
     lang = data.get("lang", "uz")
     kb = await get_dynamic_keyboard(session, "regions", lang)
     if kb is None:
-        await message.answer(t(lang, "regions.none_contact_admin"))
+        await _reply_no_regions(message, lang, db_user)
         return
     if (message.text or "").strip() in LANG_PICK_LABELS:
         await message.answer(t(lang, "start.pick_region"), reply_markup=kb)

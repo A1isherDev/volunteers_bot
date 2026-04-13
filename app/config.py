@@ -46,6 +46,10 @@ class Settings(BaseSettings):
             base = self._parse_id_set(self.admin_ids)
         return base
 
+    def is_env_privileged_user(self, telegram_id: int) -> bool:
+        """True if this Telegram id is listed in ADMIN_IDS or SUPER_ADMIN_IDS (env bootstrap)."""
+        return telegram_id in self.parsed_admin_ids() or telegram_id in self.parsed_super_admin_ids()
+
     @staticmethod
     def _parse_id_set(raw: str) -> set[int]:
         if not raw or not raw.strip():
