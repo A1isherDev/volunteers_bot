@@ -1,0 +1,1 @@
+"""Volunteers management Telegram bot."""

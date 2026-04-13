@@ -1,0 +1,56 @@
+-- PostgreSQL / SQLite compatible logical schema (SQLAlchemy models are source of truth).
+-- Adjust types for your engine (e.g. BIGSERIAL for PostgreSQL).
+
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    telegram_id BIGINT NOT NULL UNIQUE,
+    username VARCHAR(64),
+    full_name VARCHAR(255) NOT NULL,
+    phone VARCHAR(64) NOT NULL,
+    age INTEGER,
+    region VARCHAR(255) NOT NULL,
+    role VARCHAR(32) NOT NULL DEFAULT 'user',
+    language VARCHAR(8) NOT NULL DEFAULT 'uz',
+    registered_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_active_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS ix_users_telegram_id ON users (telegram_id);
+
+CREATE TABLE IF NOT EXISTS faqs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    question_uz VARCHAR(512) NOT NULL,
+    answer_uz TEXT NOT NULL,
+    question_ru VARCHAR(512),
+    answer_ru TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS tickets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(16) NOT NULL DEFAULT 'open',
+    body_text TEXT NOT NULL,
+    admin_message_id BIGINT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS suggestions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    text TEXT NOT NULL,
+    admin_message_id BIGINT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS linked_groups (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id BIGINT NOT NULL UNIQUE,
+    project_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS ix_linked_groups_chat_id ON linked_groups (chat_id);
