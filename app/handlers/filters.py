@@ -1,4 +1,5 @@
 from aiogram.filters import Filter
+from aiogram.types import Message
 
 from app.config import get_settings
 from app.database.models import UserRole
@@ -29,7 +30,6 @@ class IsSuperAdmin(Filter):
 
 
 class InAdminGroup(Filter):
-    async def __call__(self, event, __: dict) -> bool:
+    async def __call__(self, message: Message) -> bool:
         s = get_settings()
-        chat = getattr(event, "chat", None)
-        return chat is not None and chat.id == s.admin_group_id
+        return message.chat is not None and message.chat.id == s.admin_group_id
