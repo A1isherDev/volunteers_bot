@@ -1,5 +1,8 @@
-from collections import defaultdict, deque
-from time import monotonic
+from __future__ import annotations
+
+import logging
+import time
+import uuid
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
@@ -7,16 +10,32 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 from app.config import get_settings
 from app.i18n import t
 
+logger = logging.getLogger(__name__)
+
 
 class RateLimitMiddleware(BaseMiddleware):
-    def __init__(self) -> None:
-        self._hits: dict[int, deque[float]] = defaultdict(deque)
+    """Sliding-window rate limit via Redis only (multi-worker safe)."""
 
-    def _prune(self, uid: int, window: float) -> None:
-        dq = self._hits[uid]
-        now = monotonic()
-        while dq and now - dq[0] > window:
-            dq.popleft()
+    async def _allow(self, uid: int, limit: int, window: float) -> bool:
+        try:
+            from app.infrastructure.redis_connection import get_redis
+
+            r = await get_redis()
+            if r is None:
+                logger.error("Rate limit: Redis unavailable; blocking request")
+                return False
+            now = time.time()
+            key = f"rl:sliding:{uid}"
+            await r.zremrangebyscore(key, 0, now - window)
+            n = await r.zcard(key)
+            if n >= limit:
+                return False
+            await r.zadd(key, {f"{uuid.uuid4().hex}": now})
+            await r.expire(key, int(window) + 5)
+            return True
+        except Exception as e:
+            logger.exception("Rate limit Redis error: %s", e)
+            return False
 
     async def __call__(self, handler, event: TelegramObject, data: dict):
         settings = get_settings()
@@ -38,13 +57,10 @@ class RateLimitMiddleware(BaseMiddleware):
 
         window = float(settings.rate_limit_window_sec)
         limit = settings.rate_limit_messages
-        self._prune(uid, window)
-        dq = self._hits[uid]
-        if len(dq) >= limit:
+        if not await self._allow(uid, limit, window):
             if isinstance(event, Message):
                 await event.answer(t(lang, "errors.rate_limited"))
             elif isinstance(event, CallbackQuery):
                 await event.answer(t(lang, "errors.rate_limited"), show_alert=True)
             return None
-        dq.append(monotonic())
         return await handler(event, data)

@@ -24,6 +24,10 @@ def language_pick_kb() -> ReplyKeyboardMarkup:
 
 def main_menu_kb(lang: str, user: User | None) -> ReplyKeyboardMarkup:
     rows: list[list[KeyboardButton]] = [
+        [
+            KeyboardButton(text=t(lang, "menu.projects")),
+            KeyboardButton(text=t(lang, "menu.profile")),
+        ],
         [KeyboardButton(text=t(lang, "menu.stats"))],
         [KeyboardButton(text=t(lang, "menu.faq"))],
         [
@@ -36,6 +40,12 @@ def main_menu_kb(lang: str, user: User | None) -> ReplyKeyboardMarkup:
             [
                 KeyboardButton(text=t(lang, "menu.broadcast")),
                 KeyboardButton(text=t(lang, "menu.regions_admin")),
+            ]
+        )
+        rows.append(
+            [
+                KeyboardButton(text=t(lang, "menu.applications_admin")),
+                KeyboardButton(text=t(lang, "menu.projects_admin")),
             ]
         )
         rows.append([KeyboardButton(text=t(lang, "menu.faq_admin"))])
@@ -56,6 +66,25 @@ def registration_phone_kb(lang: str) -> ReplyKeyboardMarkup:
 def registration_skip_age_kb(lang: str) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text=t(lang, "common.skip"))]],
+        resize_keyboard=True,
+    )
+
+
+def registration_skip_bio_kb(lang: str) -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text=t(lang, "common.skip"))]],
+        resize_keyboard=True,
+    )
+
+
+def gender_reply_kb(lang: str) -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text=t(lang, "gender.female_btn"))],
+            [KeyboardButton(text=t(lang, "gender.male_btn"))],
+            [KeyboardButton(text=t(lang, "gender.other_btn"))],
+            [KeyboardButton(text=t(lang, "gender.unspecified_btn"))],
+        ],
         resize_keyboard=True,
     )
 

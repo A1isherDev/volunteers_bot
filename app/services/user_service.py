@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
-from app.database.models import Region, User, UserRole
+from app.database.models import User, UserRole
+from app.repositories.user_repository import UserRepository
 
 
 class UserService:
     def __init__(self, session: AsyncSession):
         self.session = session
+        self._repo = UserRepository(session)
 
     def _env_roles(self, telegram_id: int) -> str:
         s = get_settings()
@@ -23,14 +23,9 @@ class UserService:
         return UserRole.user.value
 
     async def get_by_telegram_id(self, telegram_id: int) -> User | None:
-        r = await self.session.execute(select(User).where(User.telegram_id == telegram_id))
-        return r.scalar_one_or_none()
+        return await self._repo.get_by_telegram_id(telegram_id)
 
     async def ensure_env_privileged_stub(self, telegram_user) -> User | None:
-        """
-        If telegram_user is listed in env ADMIN_IDS / SUPER_ADMIN_IDS and has no DB row yet,
-        create a minimal user (no region) so admin flows never deadlock on empty setup.
-        """
         tid = telegram_user.id
         s = get_settings()
         if not s.is_env_privileged_user(tid):
@@ -46,7 +41,7 @@ class UserService:
             telegram_id=tid,
             username=getattr(telegram_user, "username", None),
             full_name=name[:255],
-            phone="0000000000",
+            phone="",
             region_id=None,
             age=None,
             role=role,
@@ -64,14 +59,16 @@ class UserService:
         return None
 
     async def touch_activity(self, telegram_id: int, username: str | None = None) -> None:
-        vals = {"last_active_at": datetime.now(timezone.utc)}
-        if username is not None:
-            vals["username"] = username
-        await self.session.execute(update(User).where(User.telegram_id == telegram_id).values(**vals))
+        await self._repo.touch_activity(telegram_id, username=username)
 
     async def ensure_env_roles(self, user: User) -> User:
         env_role = self._env_roles(user.telegram_id)
-        order = {UserRole.user.value: 0, UserRole.admin.value: 1, UserRole.super_admin.value: 2}
+        order = {
+            UserRole.user.value: 0,
+            UserRole.volunteer.value: 1,
+            UserRole.admin.value: 2,
+            UserRole.super_admin.value: 3,
+        }
         if order.get(env_role, 0) > order.get(user.role, 0):
             user.role = env_role
             await self.session.flush()
@@ -81,20 +78,27 @@ class UserService:
         self,
         telegram_id: int,
         full_name: str,
-        phone: str,
         region_id: int,
-        age: int | None,
+        *,
+        age: int | None = None,
         language: str = "uz",
         username: str | None = None,
+        phone: str | None = None,
+        gender: str | None = None,
+        bio: str | None = None,
+        photo_file_id: str | None = None,
     ) -> User:
         role = self._env_roles(telegram_id)
         u = User(
             telegram_id=telegram_id,
             username=username,
             full_name=full_name,
-            phone=phone,
+            phone=phone if phone is not None else "",
             region_id=region_id,
             age=age,
+            gender=gender,
+            bio=bio,
+            photo_file_id=photo_file_id,
             role=role,
             language=language,
         )
@@ -103,18 +107,13 @@ class UserService:
         return u
 
     async def set_language(self, telegram_id: int, lang: str) -> None:
-        await self.session.execute(
-            update(User).where(User.telegram_id == telegram_id).values(language=lang)
-        )
+        await self.session.execute(update(User).where(User.telegram_id == telegram_id).values(language=lang))
 
     async def count_users(self) -> int:
-        r = await self.session.execute(select(func.count()).select_from(User))
-        return int(r.scalar_one())
+        return await self._repo.count_users()
 
     async def count_active_users(self, days: int = 7) -> int:
-        since = datetime.now(timezone.utc) - timedelta(days=days)
-        r = await self.session.execute(select(func.count()).select_from(User).where(User.last_active_at >= since))
-        return int(r.scalar_one())
+        return await self._repo.count_active_users(days)
 
     async def list_users_page(
         self,
@@ -122,31 +121,7 @@ class UserService:
         per_page: int = 8,
         query: str | None = None,
     ) -> tuple[list[User], int]:
-        base = select(User).outerjoin(Region, User.region_id == Region.id)
-        filters = []
-        if query and query.strip():
-            term = f"%{query.strip().lower()}%"
-            filters.append(
-                or_(
-                    func.lower(User.full_name).like(term),
-                    func.lower(User.phone).like(term),
-                    func.lower(func.coalesce(Region.name_uz, "")).like(term),
-                    func.lower(func.coalesce(Region.name_ru, "")).like(term),
-                    func.lower(func.coalesce(User.username, "")).like(term),
-                )
-            )
-        count_stmt = select(func.count()).select_from(User).outerjoin(Region, User.region_id == Region.id)
-        if filters:
-            count_stmt = count_stmt.where(*filters)
-        total = int((await self.session.execute(count_stmt)).scalar_one())
-        pages = max(1, (total + per_page - 1) // per_page)
-        page = max(1, min(page, pages))
-        offset = (page - 1) * per_page
-        stmt = base.order_by(User.created_at.desc())
-        if filters:
-            stmt = stmt.where(*filters)
-        r = await self.session.execute(stmt.offset(offset).limit(per_page))
-        return list(r.scalars().all()), pages
+        return await self._repo.list_users_page(page=page, per_page=per_page, query=query)
 
     async def set_role(self, telegram_id: int, role: str) -> bool:
         u = await self.get_by_telegram_id(telegram_id)
@@ -157,5 +132,4 @@ class UserService:
         return True
 
     async def all_telegram_ids(self) -> list[int]:
-        r = await self.session.execute(select(User.telegram_id))
-        return [row[0] for row in r.all()]
+        return await self._repo.all_telegram_ids()

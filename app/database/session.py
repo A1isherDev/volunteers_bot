@@ -1,3 +1,7 @@
+"""Async SQLAlchemy engine + session factory. Schema changes only via Alembic — no create_all."""
+
+from __future__ import annotations
+
 import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -11,6 +15,13 @@ _engine = None
 _session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
+def get_engine():
+    """Exposed for Alembic / health checks."""
+    get_session_factory()
+    assert _engine is not None
+    return _engine
+
+
 def get_session_factory() -> async_sessionmaker[AsyncSession]:
     global _engine, _session_factory
     if _session_factory is None:
@@ -20,13 +31,19 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
             url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
         elif url.startswith("postgres://"):
             url = url.replace("postgres://", "postgresql+asyncpg://", 1)
-        connect_args = {}
+        connect_args: dict = {}
         if "sqlite" in url:
             connect_args["check_same_thread"] = False
+        pool_kwargs: dict = {}
+        if "postgresql" in url:
+            pool_kwargs["pool_pre_ping"] = True
+            pool_kwargs["pool_size"] = 10
+            pool_kwargs["max_overflow"] = 20
         _engine = create_async_engine(
             url,
             echo=False,
             connect_args=connect_args,
+            **pool_kwargs,
         )
         _session_factory = async_sessionmaker(
             _engine,
@@ -38,14 +55,12 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
 
 
 async def init_db() -> None:
+    """Bootstrap seed data only. Tables must exist (`alembic upgrade head`)."""
     get_session_factory()
-    assert _engine is not None
-    async with _engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
     factory = get_session_factory()
     async with factory() as session:
         from app.database.bootstrap import bootstrap_defaults
 
         await bootstrap_defaults(session)
         await session.commit()
-    logger.info("Database tables ensured")
+    logger.info("Database bootstrap completed (migrations are applied separately)")

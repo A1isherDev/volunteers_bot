@@ -38,21 +38,24 @@ pip install -r requirements.txt
 2. Copy `.env.example` to `.env` and set:
 
    - `BOT_TOKEN` — from [@BotFather](https://t.me/BotFather)
+   - `REDIS_URL` — required (FSM, rate limits, queues, metrics)
    - `ADMIN_IDS` — comma-separated numeric user IDs
    - `ADMIN_GROUP_ID` — numeric chat ID of the central admin group (the bot must be a member)
    - Optional `SUPER_ADMIN_IDS`; if omitted, every `ADMIN_IDS` entry is treated as a super-admin for the panel
 
-3. Run the bot (from the project root):
+3. Create the database schema (Alembic only; the app does not run `create_all`):
+
+```bash
+alembic upgrade head
+```
+
+For PostgreSQL, set `DATABASE_URL`, for example `postgresql://user:password@host:5432/dbname` (the app normalizes this to `postgresql+asyncpg://`).
+
+4. Run the bot (from the project root):
 
 ```bash
 python -m app.main
 ```
-
-Tables are created automatically on startup (`create_all`). For production PostgreSQL, point `DATABASE_URL` to your instance, for example:
-
-`postgresql://user:password@host:5432/dbname`
-
-(The code normalizes this to `postgresql+asyncpg://` automatically.)
 
 ## Admin group
 
@@ -71,5 +74,6 @@ Env-listed `ADMIN_IDS` / `SUPER_ADMIN_IDS` are merged on each update so configur
 ## Production notes
 
 - Use a process manager (systemd, Docker, etc.) and one bot instance per token.
-- FSM storage is in-memory (`MemoryStorage`). For multiple workers, switch to **Redis** FSM storage.
+- **Redis** is required: FSM, rate limiting, news queue, and metrics assume `REDIS_URL` (multi-worker safe).
+- Run `alembic upgrade head` on deploy before starting the bot.
 - Tune `BROADCAST_*`, `RATE_LIMIT_*`, and `CREATION_COOLDOWN_SEC` for Telegram limits and your audience size.

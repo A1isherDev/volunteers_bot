@@ -1,8 +1,10 @@
+import asyncio
 from typing import Any, Awaitable, Callable
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 
+from app.monitoring.metrics import record_active_user
 from app.services.user_service import UserService
 
 
@@ -33,6 +35,7 @@ class UserContextMiddleware(BaseMiddleware):
                 db_user = await svc.ensure_env_roles(db_user)
                 await svc.touch_activity(tg_user.id, username=tg_user.username)
                 await session.refresh(db_user)
+                asyncio.create_task(record_active_user(tg_user.id))
             data["db_user"] = db_user
             data["tg_user"] = tg_user
         else:

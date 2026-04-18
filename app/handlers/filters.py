@@ -5,6 +5,7 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 
 from app.config import get_settings
 from app.database.models import User, UserRole
+from app.security.rbac import Permission, has_permission
 
 
 def may_use_admin_tools(telegram_id: int, db_user: User | None) -> bool:
@@ -55,3 +56,16 @@ class InAdminGroup(Filter):
     async def __call__(self, message: Message) -> bool:
         s = get_settings()
         return message.chat is not None and message.chat.id == s.admin_group_id
+
+
+class RequiresPermission(Filter):
+    """RBAC: Permission enum (see app.security.rbac)."""
+
+    def __init__(self, permission: Permission) -> None:
+        self.permission = permission
+
+    async def __call__(self, event: TelegramObject, db_user: User | None = None) -> bool:
+        tid = _telegram_id_from_event(event)
+        if tid is None:
+            return False
+        return has_permission(tid, db_user, self.permission)

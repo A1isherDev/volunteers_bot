@@ -110,7 +110,7 @@ async def super_open_user(query: CallbackQuery, db_user: User, session):
     rtxt = f"{reg.name_uz} / {reg.name_ru}" if reg else "—"
     text = (
         f"{html.escape(u.full_name)}\nID: <code>{u.telegram_id}</code>\n{html.escape(un)}\n"
-        f"Phone: {html.escape(u.phone)}\nRegion: {html.escape(rtxt)}\nRole: {u.role}"
+        f"Phone: {html.escape(u.phone or '—')}\nRegion: {html.escape(rtxt)}\nRole: {u.role}"
     )
     await query.message.edit_text(text, reply_markup=super_admin_user_actions(lang, u.telegram_id))
     await query.answer()

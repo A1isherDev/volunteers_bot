@@ -6,6 +6,10 @@
     "ask_phone": "Telefon raqamingizni \"Telefonni yuborish\" tugmasi bilan yuboring yoki raqamni qo'lda yozing (9–16 raqam).",
     "phone_invalid": "Telefon raqami noto'g'ri. Qayta kiriting yoki tugma orqali yuboring.",
     "ask_age": "Yoshingizni raqam bilan kiriting yoki \"O'tkazib yuborish\" tugmasini bosing.",
+    "ask_gender": "Jinsingizni tanlang.",
+    "ask_bio": "O'zingiz haqingizda qisqacha yozing yoki \"O'tkazib yuborish\".",
+    "ask_photo": "Profil rasmini yuboring yoki \"O'tkazib yuborish\".",
+    "bio_too_long": "Matn juda uzun. Qisqaroq yozing yoki o'tkazing.",
     "pick_region": "Hududingizni pastdagi tugmalardan tanlang.",
     "done": "Ro'yxatdan muvaffaqiyatli o'tdingiz!",
     "welcome_back": "Xush kelibsiz! Menyu orqali davom eting."
@@ -14,6 +18,8 @@
     "changed": "Til o'zgartirildi."
   },
   "menu": {
+    "projects": "📋 Loyihalar",
+    "profile": "👤 Profil",
     "stats": "📊 Statistika",
     "faq": "📚 FAQ / Loyihalar haqida",
     "support": "🆘 Qo'llab-quvvatlash",
@@ -22,7 +28,37 @@
     "admin_panel": "Super admin",
     "broadcast": "Xabar yuborish (barchaga)",
     "regions_admin": "🗺️ Hududlar (admin)",
+    "applications_admin": "📝 Arizalar",
+    "projects_admin": "🗂️ Loyihalar (admin)",
     "faq_admin": "📂 FAQ boshqaruvi"
+  },
+  "gender": {
+    "female_btn": "Ayol",
+    "male_btn": "Erkak",
+    "other_btn": "Boshqa",
+    "unspecified_btn": "Aytishni xohlamayman"
+  },
+  "projects": {
+    "list_title": "Faol loyihalar:",
+    "empty": "Hozircha ochiq loyihalar yo'q.",
+    "detail": "<b>{title}</b>\n\n{description}",
+    "apply": "Ariza yuborish",
+    "applied": "Arizangiz qabul qilindi (kutilmoqda).",
+    "apply_pending": "Bu loyiha uchun arizangiz allaqachon ko'rib chiqilmoqda.",
+    "apply_already": "Siz allaqachon qabul qilindingiz.",
+    "apply_again": "Yangi ariza yuborildi (kutilmoqda).",
+    "inactive": "Loyiha mavjud emas yoki yopilgan."
+  },
+  "profile": {
+    "title": "Profilingiz",
+    "line_name": "Ism: {name}",
+    "line_age": "Yosh: {age}",
+    "line_region": "Hudud: {region}",
+    "line_gender": "Jins: {gender}",
+    "line_bio": "Bio: {bio}",
+    "joined_title": "Qatnashayotgan loyihalar:",
+    "joined_empty": "Hozircha tasdiqlangan loyiha yo'q.",
+    "no_photo": "Rasm yo'q"
   },
   "regions": {
     "none_contact_admin": "Hozircha mavjud hududlar yo'q. Iltimos, admin bilan bog'laning — ular hudud qo'shgach, /start bilan qayta urinib ko'ring.",
@@ -77,6 +113,21 @@
     "prompt": "Taklifingizni batafsil yozing.",
     "thanks": "Rahmat! Taklifingiz qabul qilindi."
   },
+  "admin_apps": {
+    "not_found": "Ariza topilmadi.",
+    "not_pending": "Bu ariza endi kutilayotgan holatda emas.",
+    "title": "Kutilayotgan arizalar:",
+    "empty": "Kutilayotgan ariza yo'q.",
+    "line": "#{id} — {user} → {project}",
+    "approved": "Ariza #{id} tasdiqlandi.",
+    "rejected": "Ariza #{id} rad etildi."
+  },
+  "admin_projects": {
+    "start": "Yangi loyiha: birinchi xabar sifatida <b>sarlavha</b>ni yuboring.",
+    "ask_desc": "Endi loyiha tavsifini yuboring (bir necha qator bo'lishi mumkin).",
+    "saved": "Loyiha saqlandi: {title}",
+    "cancel": "Bekor qilindi."
+  },
   "broadcast": {
     "admin_only": "Faqat adminlar.",
     "send_text": "Yuboriladigan matnni kiriting.",
@@ -84,6 +135,7 @@
     "buttons_prompt": "Tugmalar: har bir qatorda `Matn|https://link` yoki /skip",
     "confirm": "Tasdiqlaysizmi? Ha - /yes Bekor - /cancel",
     "started": "Xabar yuborish boshlandi.",
+    "queued": "Navbatga qo'yildi. Yuborish fon jarayonida davom etadi.",
     "done": "Yuborish tugadi. Muvaffaqiyat: {ok}, xato: {fail}",
     "cancelled": "Bekor qilindi."
   },

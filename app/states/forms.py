@@ -4,9 +4,16 @@ from aiogram.fsm.state import State, StatesGroup
 class RegistrationStates(StatesGroup):
     language = State()
     full_name = State()
-    phone = State()
     age = State()
     region = State()
+    gender = State()
+    bio = State()
+    photo = State()
+
+
+class AdminProjectStates(StatesGroup):
+    title = State()
+    description = State()
 
 
 class SupportStates(StatesGroup):
